@@ -1,35 +1,39 @@
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
 #include <unordered_map>
 
 //
 
 int balance;
-int choice;
-int chips = 0;
+int chips = 100;
 int *chip = &chips;
+bool newPlayer = false;
 
 //
 
 bool balanceExists();
 void checkBalance();
+void getChips();
 void cashOut(int *chip);
 void mainRoom();
 void slots();
 
-//
+// issues:
+// when slots ends, it somehow calls getChips and then when that is done it ends the program instead of returning to mainRoom
 
 int main() {
 
     if (!balanceExists()) {
         std::ofstream outfile ("balance.txt");
         outfile << "100" << std::endl;
+        newPlayer = true;
     }
     std::fstream outfile;
     outfile.open("balance.txt", std::ios::in);
     outfile >> balance;
 
-    //mainRoom();
+    mainRoom();
 
     return 0;
 }
@@ -44,44 +48,106 @@ bool balanceExists() {
 }
 
 void checkBalance() {
-    std::cout << "You have " << chips << " chips available to bet." << std::endl;
+    std::cout << "You have " << balance << " chips available to bet, and currently have " << 
+    chips << " chips on you." << std::endl;
 }
 
-void mainRoom() {
-    std::cout << "Welcome to Chip's Con.";
-    std::cout << "pick room";
-    while (choice != 4) {
-        std::cin >> choice;
-        if (!isdigit(choice) || choice > 4 || choice < 1) {
-            std::cout << "wrong";
+void getChips() {
+    std::cout << "get em" << std::endl;
+    int chipsInput;
+    std::cin >> chipsInput;
+    while (true) {
+        if (std::cin.fail() || chipsInput > balance || chips < 1) {
+            std::cout << "no!" << std::endl;
+            std::cin >> chipsInput;
         } else {
+            balance -= chips;
             break;
         }
     }
-
-    switch (choice) {
-        case 1:
-        choice = 0;
-        slots();
-
-        case 2:
-        choice = 1;
-
-        case 3:
-        choice = 1;
-
-        case 4:
-        cashOut(chip);
-        exit(0);
-
-        default:
-        std::cout << "wrong" << std::endl;
-        std::cin >> choice;
-    }
 }
 
+void mainRoom() {
+    while (true) {
+        int choice = 0;
+        if (newPlayer) {
+            std::cout << "Welcome t' the Rat-a-Tat Catsino!" << std::endl;
+            std::cout << "I see this is your first time here.";
+            usleep(2000000);
+            std::cout << "Or maybe you're fakin' it...." << std::endl;
+            usleep(1000000);
+            std::cout << "Whateva'. Yer startin' off with 100 chips. Don't waste 'em at all." << std::endl;
+            usleep(3000000);
+            std::cout << "...Or do. I don't give a rat's ass." << std::endl;
+            usleep(1000000);
+        } else {
+            std::cout << "Welcome back t' the Rat-a-Tat Catsino!" << std::endl;
+            usleep(1000000);
+            checkBalance(); 
+            usleep(1000000);
+        }
+
+        std::cout << "Pick a room?" << std::endl;
+        usleep(1000000);
+        std::cout << "1. Slots" << '\n' << "2. WIP (picks 1)" << '\n' <<
+            "3. Get chips." << '\n' << "4. Cash out and exit." << std::endl;
+        
+        while (true) {
+            std::cin >> choice;
+            if (std::cin.fail() || choice > 4 || choice < 1) {
+                std::cout << "That's not an option ya dipwad!" << std::endl;
+            } else {
+                break;
+            }
+        }
+        switch (choice) {
+            case 1:
+            slots();
+            std::cout << "Well? Anythin' else?" << std::endl;
+            std::cout << "1. Slots" << '\n' << "2. WIP (picks 1)" << '\n' <<
+            "3. Get chips." << '\n' << "4. Cash out and exit." << std::endl;
+            while (true) {
+                std::cin >> choice;
+                if (std::cin.fail() || choice > 4 || choice < 1) {
+                    std::cout << "That's not an option ya dipwad!" << std::endl;
+                } else {
+                    break;
+                }
+            }
+            
+
+            case 2:
+            choice = 1;
+
+            case 3:
+            choice = 0;
+            getChips();
+
+            case 4:
+            cashOut(chip);
+            exit(0);
+
+            default:
+            std::cout << "That's not an option ya dipwad!" << std::endl;
+            usleep(1000000);
+            std::cout << "Pick a room?" << std::endl;
+            usleep(3000000);
+            std::cout << "1. Slots" << '\n' << "2. WIP (picks 1)" << '\n' <<
+                "3. WIP (picks 1)" << '\n' << "4. Cash out and exit." << std::endl;
+            
+            std::cin >> choice;
+        }
+    }
+}
+    
+
 void slots() {
+    int choice = 0;
+    std::cout << "(DESCRIBE THE SLOTS AREA)" << std::endl;
+    srand(time(NULL));
     while (choice != 4) {
+
+
 
         /*
         const std::unordered_map<int, int> slotsSymbols = {
@@ -97,24 +163,27 @@ void slots() {
             { 9, 82 },
             { 0, 90 },
         };*/
-
-        std::cout << "wyd";
-        while (true) {
-            std::cin >> choice;
-            if (!isdigit(choice) || choice > 4 || choice < 1) {
-                std::cout << "wrong";
-            } else {
-                break;
+        if (choice == 0) {
+            std::cout << "Which machine will ya pick?" << std::endl;
+            while (true) {
+                std::cin >> choice;
+                if (std::cin.fail() || choice > 4 || choice < 1) {
+                    std::cout << "That's not an option ya dipwad!" << std::endl;
+                } else {
+                    break;
+                }
             }
         }
         if (choice == 1) {
             int bet = 0;
             while (true) {
                 checkBalance();
-                std::cout << "Enter your bet amount: ";
+                std::cout << "Enter your bet amount (-1 to exit): " << std::endl;
                 std::cin >> bet;
-                if (!isdigit(bet) || bet > chips) {
-                    std::cout << "wrong";
+                if (bet == -1) {
+                    return;
+                } else if (std::cin.fail() || bet < -1 || bet > chips) {
+                    std::cout << "That's not an option ya dipwad!" << std::endl;
                 } else {
                     break;
                 }
@@ -181,8 +250,7 @@ void slots() {
                 }
             }
             if (lost) {
-                std::cout << "You lost! " << bet << " chips.";
-
+                std::cout << "Hah! You lost " << bet << " chips!";
             }
 
             // 3x Winner
@@ -219,18 +287,43 @@ void slots() {
                 // 2x Winner (with wildcard)
 
                 else if (wildcard) {
-                    ;;
+                    for (int i = 0; i < 3; i++) {
+                        if (slotsOutput[i] > slotsOutput[0]) {
+                            slotsOutput[0] = slotsOutput[i];
+                        }
+                    }
+                    chips += (std::stoi(slotsOutput[0]) * 2) * bet;
+                    std::cout << "You won " << (std::stoi(slotsOutput[0]) * 2) * bet << " chips!" << std::endl;
                 }
 
                 // no matches
                 
                 else {
-                    std::cout << "lol";
+                    std::cout << "Heh! Looka' that! No matches." << std::endl;
                 }
             } // if(!lost)
+            
+            std::cout << "Wanna go again? (1 - yes, 2 - no)" << std::endl;
+            std::cin >> choice;
+            while (true) {
+                if (std::cin.fail() || choice > 4 || choice < 1) {
+                    std::cout << "That's not an option ya dipwad!" << std::endl;
+                } else if (choice == 1) { 
+                    break;
+                } else if (choice == 2) {
+                    choice = 4;
+                    break;
+                }
+            }
+        } else if  (choice < 4) {
+            choice = 4;
+        } 
+        
+        else if (choice == 4) {
             choice = 0;
-        } // if (choice == 1)
-    } // while (choice != 4)
+            return;
+        }
+    } // while (choice != 4)    
 } // slots()
 
 void cashOut(int *chip) {
