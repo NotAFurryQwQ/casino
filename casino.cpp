@@ -14,18 +14,22 @@ int waitSecond = 1000000;
 
 //
 
-bool balanceExists();
-void checkBalance();
-void getChips();
-void cashOut(int *chip);
-int mainRoom();
-void slots();
+bool balanceExists(); // checks if balance.txt exists, aka a first time player
+void checkBalance(); // displays acct balance and active chips
+void getChips(); // convert balance to chips
+void cashOut(int *chip); // convert chips to balance
+int mainRoom(); // main room hub loop thing
+
+// GAMES // 
+void slots(); // slot machines
+void blackjack(); // blackjack
+    void cards(int game, int players); // displays cards for blackjack or poker, depends on which (int game) and how many (int players) is chosen
+
 
 // issues:
-// when slots ends, it somehow calls getChips and then when that is done it ends the program instead of returning to mainRoom
+// random things when inputs are stupid numbers
 
 int main() {
-
     if (!balanceExists()) {
         std::ofstream outfile ("balance.txt");
         outfile << "100" << std::endl;
@@ -48,11 +52,13 @@ int main() {
         std::cout << "Welcome back t' the Rat-a-Tat Catsino!" << std::endl;
 
     }
-
+    srand(time(NULL));
     while (!finished) {
         int choice = mainRoom();
-        if (choice == 1 || choice == 2) {
+        if (choice == 1) {
             slots();
+        } else if (choice == 2) {
+            blackjack();
         } else if (choice == 3) {
             getChips();
         } else if (choice == 4) {
@@ -82,7 +88,6 @@ void checkBalance() {
     chips << " chips on you." << std::endl;
 }
 
-
 void getChips() {
     std::cout << "How many chips ya want? Ya have " << balance << " in that account of yers." << std::endl;
     int chipsInput;
@@ -98,6 +103,7 @@ void getChips() {
         }
     }
 }
+
 
 int mainRoom() {
     int choice;
@@ -128,7 +134,6 @@ void slots() {
     int choice = 0;
     int bet = 0;
     std::cout << "(DESCRIBE THE SLOTS AREA)" << std::endl;
-    srand(time(NULL));
     while (choice != 4) {
         if (choice == 0) {
             std::cout << "1. Lo-Lo" << '\n' << "2. Mid" << '\n' << "3.Hi-hi" << std::endl;
@@ -317,6 +322,58 @@ void slots() {
         }
     } // while (choice != 4)    
 } // slots()
+
+void blackjack() {
+    int choice = 0;
+    int bet = 0;
+    bool solo = true;
+    std::cout << "(DESCRIBE THE BLACKJACK AREA)" << std::endl;
+    std::cout << "Solo (1) or multiple players (2)" << std::endl;
+    while (true) {
+        std::cin >> choice;
+        if (choice ==  2) {
+            solo = false;
+        } else if (choice == 3) {
+            return;
+        } else if (!std::cin || choice > 3 || choice < 1) {
+            std::cin.clear();
+            std::cin.ignore();
+            std::cout << "That's not an option ya dipwad!" << std::endl;
+        } else {
+            break;
+        }
+    }
+
+    while (choice != 3) {
+        while (true) {
+            if (bet == 0) {
+                checkBalance();
+                std::cout << "Enter your bet amount (-1 to go back to main room): " << std::endl;
+                std::cin >> bet;
+                if (bet == -1) {
+                    return;
+                } else if (!std::cin || bet < -1 || bet > chips) {
+                    std::cin.clear();
+                    std::cin.ignore();
+                    std::cout << "Not enough dough." << std::endl;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        chips -= bet;
+
+        //
+
+
+    }
+}
+
+void cards(int game, int players) {
+    ;;
+}
 
 void cashOut(int *chip) {
     if (!balanceExists()) {
